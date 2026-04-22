@@ -1,6 +1,6 @@
 services:
   douban-api:
-    image: ghcr.io/dreammis/douban-api-rs:latest
+    build: .
     container_name: douban-api-rs
     restart: unless-stopped
     ports:
