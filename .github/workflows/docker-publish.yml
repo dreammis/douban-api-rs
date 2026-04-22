@@ -60,10 +60,13 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # ── 缓存优化 ──────────────────────────────────────────────────
+          # cache-from/to 利用 GHA 缓存，配合 Dockerfile 中的 cargo-chef
+          # 分层策略，依赖未变时直接命中缓存，跳过重新下载/编译 crate
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
