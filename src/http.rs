@@ -1,6 +1,6 @@
 use crate::config::Opt;
 use reqwest::header::{HeaderMap, HeaderValue};
-use reqwest::{cookie::Jar, Error, IntoUrl, Request, RequestBuilder, Response, Url};
+use reqwest::{cookie::Jar, Error, IntoUrl, Proxy, Request, RequestBuilder, Response, Url};
 use std::future::Future;
 use std::sync::Arc;
 use std::time::Duration;
@@ -29,15 +29,24 @@ impl HttpClient {
             }
             println!("{:?}", jar);
         }
-        let client = reqwest::Client::builder()
+
+        let mut builder = reqwest::Client::builder()
             .user_agent(UA)
             .default_headers(headers)
             .cookie_provider(Arc::new(jar))
             .connect_timeout(Duration::from_secs(10))
-            .timeout(Duration::from_secs(30))
-            // .connection_verbose(true)
-            .build()
-            .unwrap();
+            .timeout(Duration::from_secs(30));
+        // .connection_verbose(true)
+
+        // 注入代理设置
+        if !config.proxy.is_empty() {
+            let proxy = Proxy::all(&config.proxy)
+                .unwrap_or_else(|e| panic!("无效的代理地址 '{}': {}", config.proxy, e));
+            builder = builder.proxy(proxy);
+            println!("代理已启用: {}", config.proxy);
+        }
+
+        let client = builder.build().unwrap();
         Self { client }
     }
 
