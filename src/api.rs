@@ -311,7 +311,7 @@ impl Douban {
                     .next()
                     .unwrap_or("")
                     .to_string();
-                let mut role = match self.re_role.captures(x.find("div.info span.role").text()) {
+                let mut role = match self.re_role.captures(&x.find("div.info span.role").text()) {
                     Some(x) => x.get(1).unwrap().as_str().trim().to_string(),
                     None => String::new(),
                 };

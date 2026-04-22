@@ -1,7 +1,8 @@
 # Build stage
-FROM rust:1.75-alpine AS builder
+# 使用最新的 alpine 版本的 rust 镜像以支持最新的 edition 和依赖
+FROM rust:alpine AS builder
 
-# 安装构建依赖，包括 musl-dev, pkgconfig, openssl-dev 等
+# 安装构建依赖
 RUN apk add --no-cache musl-dev pkgconfig openssl-dev git
 
 WORKDIR /usr/src/douban-api-rs
@@ -22,7 +23,7 @@ WORKDIR /data/
 # 从构建阶段复制编译好的二进制文件
 COPY --from=builder /usr/src/douban-api-rs/target/release/douban-api-rs /usr/bin/douban-api-rs
 
-# 暴露端口（与 Opt 默认端口 8080 保持一致）
+# 暴露端口
 EXPOSE 8080
 
 ENTRYPOINT ["/sbin/tini", "--"]
