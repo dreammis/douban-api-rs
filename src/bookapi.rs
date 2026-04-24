@@ -39,7 +39,7 @@ impl DoubanBookApi {
     }
 
     pub async fn search(&self, q: &str, count: i32) -> Result<DoubanBookResult<DoubanBook>> {
-        let list = self.get_list(q, count).await.unwrap();
+        let list = self.get_list(q, count).await?;
         Ok(DoubanBookResult {
             code: 0,
             books: list,
@@ -70,10 +70,10 @@ impl DoubanBookApi {
                     .find(".result")
                     .map(|_index, x| {
                         let x = Vis::dom(x);
-                        let onclick = x.find("div.title a").attr("onclick").unwrap().to_string();
+                        let onclick = x.find("div.title a").attr("onclick").map(|v| v.to_string()).unwrap_or_default();
                         let title = x.find("div.title a").text().trim().to_string();
                         let summary = x.find("p").text().trim().to_string();
-                        let large = x.find(".pic img").attr("src").unwrap().to_string();
+                        let large = x.find(".pic img").attr("src").map(|v| v.to_string()).unwrap_or_default();
                         let rate = x.find(".rating_nums").text().to_string();
                         let sub_str = x.find(".subject-cast").text().to_string();
                         let subjects: Vec<&str> = sub_str.split('/').collect();
@@ -111,7 +111,7 @@ impl DoubanBookApi {
                         let rating = if rate.is_empty() {
                             Rating::new(0.0)
                         } else {
-                            Rating::new(rate.parse::<f32>().unwrap())
+                            Rating::new(rate.parse::<f32>().unwrap_or(0.0))
                         };
                         let images = Image::new(large);
                         DoubanBook::simple(SimpleDoubanBook {
@@ -157,8 +157,8 @@ impl DoubanBookApi {
         let document = Vis::load(&result_text).unwrap();
         let x = document.find("#wrapper");
         let title = x.find("h1>span:first-child").text().to_string();
-        let large_img = x.find("a.nbg").attr("href").unwrap().to_string();
-        let small_img = x.find("a.nbg>img").attr("src").unwrap().to_string();
+        let large_img = x.find("a.nbg").attr("href").map(|v| v.to_string()).unwrap_or_default();
+        let small_img = x.find("a.nbg>img").attr("src").map(|v| v.to_string()).unwrap_or_default();
         let content = x.find("#content");
         let mut tags = Vec::default();
         x.find("a.tag").map(|_index, t| {
@@ -174,7 +174,7 @@ impl DoubanBookApi {
             Rating { average: 0.0 }
         } else {
             Rating {
-                average: rating_str.parse::<f32>().unwrap(),
+                average: rating_str.parse::<f32>().unwrap_or(0.0),
             }
         };
         let mut summary = content
